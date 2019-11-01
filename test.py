@@ -55,43 +55,49 @@ class NewsAndTwitterAnalysis(object):
 news_source = input("What news source do you want to analyze: ")
 query = input("What do you want to search: ")
 
-def getLink(s):
-	for i in search(news_source + " " + query, tld="com", lang="en", num=s+1, start=s, stop=s+1, pause=2):
+def getLink(s,nums):
+	for i in search(news_source + " " + query, tld="com", lang="en", num=s+1+nums, start=s, stop=s+1, pause=2):
 		return i
 
-def analyzeArticleSentiment():
-	con = True
+def analyzeArticleSentiment(nums):
+	loop = 0
+	sum = 0
 	n = 0
-	link = ""
-	while(con):
-		if "videos" in getLink(n):
-			con = True
-			n+=1
-		else:
-			con = False
-			link = getLink(n)
-	print(link)
+	while loop <= nums:
+		con = True
+		link = ""
+		while(con):
+			if "videos" in getLink(n,nums):
+				con = True
+				n+=1
+			else:
+				con = False
+				link = getLink(n,nums)
+				n+=1
+		print(link)
 
-	article = Article(link)
+		article = Article(link)
 
-	article.download()
-	article.parse()
-	nltk.download('punkt')
-	article.nlp()
+		article.download()
+		article.parse()
+		nltk.download('punkt')
+		article.nlp()
 
-	text = article.summary
+		text = article.summary
 
-	print(text)
+		print(text)
 
-	obj = TextBlob(text)
-	sentiment = obj.sentiment.polarity
+		obj = TextBlob(text)
+		sentiment = obj.sentiment.polarity
 
-	return sentiment
+		sum += sentiment
+		loop+=1
+	return sum/nums
 
 def main():
 	api = NewsAndTwitterAnalysis()
 	tweets = api.getTweets(query = query, count = 200)
-	print("Analysis: " + str(analyzeArticleSentiment()) + " " + str(api.getSentiment(tweets)))
+	print("Analysis: " + str(analyzeArticleSentiment(10)) + " " + str(api.getSentiment(tweets)))
 
 if __name__ == "__main__":
 	main()
